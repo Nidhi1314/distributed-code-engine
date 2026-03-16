@@ -1,12 +1,15 @@
 import express from "express";
 import dotenv from "dotenv";
-import Redis from "ioredis";
+import {Redis} from "@upstash/redis";
 import crypto from "crypto";
 dotenv.config();
 const app=express();
 const port=3000;
 console.log("My Redis URL is:", process.env.REDIS_URL);
-const redis=new Redis(process.env.REDIS_URL);
+const redis=new Redis({
+    url:process.env.REDIS_URL,
+    token:process.env.REDIS_TOKEN
+});
 app.use(express.json());
 app.get('/ping',(req,res)=>{
    res.status(200).json({status:"api is running"});
