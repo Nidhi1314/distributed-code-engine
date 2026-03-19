@@ -2,6 +2,9 @@ import {Redis} from "@upstash/redis";
 import * as dotenv from "dotenv";
 import path from 'path';
 import fs from 'fs/promises';
+import {exec} from 'child_process';
+import util from 'util';
+const execPromise=util.promisify(exec);
 dotenv.config();
 const redis =new Redis({
     url:process.env.REDIS_URL,
@@ -19,6 +22,20 @@ const processQueue=async()=>{
             const filepath=path.join(temp,`${jobId}.${language}`);
             await fs.writeFile(filepath,code);
             console.log(`code written to ${filepath}`);
+
+            //containerised
+            console.log("spinning up docker container..");
+            const dockercommand=`docker run --rm -v "${temp}:/app" cpp-runner sh -c "g++ ${jobId}.${language} -o ${jobId} && ./${jobId}"`;
+
+            try{
+              const {stdout,stderr}=await execPromise(dockercommand);
+              if(stderr) console.log(`code compiled with warnings ${stderr}`);
+              console.log(`\n execution output-----\n${stdout}-------\n`);
+            }catch(execError){
+              console.log(`compliation error ${execError.stderr}`);
+            }
+
+            
             await fs.unlink(filepath);
             console.log(`code deleted from ${filepath}`);
           }else{
