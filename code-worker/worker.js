@@ -29,10 +29,23 @@ const processQueue=async()=>{
 
             try{
               const {stdout,stderr}=await execPromise(dockercommand);
-              if(stderr) console.log(`code compiled with warnings ${stderr}`);
+
+              let finaloutput=stdout;
+              let jobstatus="success";
+              if(stderr){
+                console.log(`code compiles with error ${stderr}`);
+                finaloutput=stderr;
+                jobstatus="error";
+              }
+              else {
               console.log(`\n execution output-----\n${stdout}-------\n`);
+              }
+              await redis.set(jobId,JSON.stringify({status:jobstatus,output:finaloutput}));
+              console.log(`result saved to redis job ${jobId} updated`);
             }catch(execError){
               console.log(`compliation error ${execError.stderr}`);
+              await redis.set(jobId,JSON.stringify({status:"error",output:execError.stderr}),{ex:3600});
+              console.log(`error saved to redis job ${jobId}`);
             }
 
             
