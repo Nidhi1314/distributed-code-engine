@@ -34,6 +34,23 @@ app.post('/submit',async (req,res)=>{
         res.status(500).json({error:"failed to add job to queue"});
     }
 })
+
+app.get('/status/:jobId',async(req,res)=>{
+   const {jobId}=req.params;
+   try{
+    const result=await redis.get(jobId);
+    if(!result){
+        return res.status(202).json({
+            status:'pending',
+            message:'Job is still in the queue or processing...'
+        });
+    }
+    return res.status(200).json(result);
+   }catch(error){
+    console.error("error fetching status:",error);
+    return res.status(500).json({error:"failed to fetch job status"});
+   }
+});
 app.listen(port,()=>{
     console.log('server is running on http://localhost:${port}')
 })
