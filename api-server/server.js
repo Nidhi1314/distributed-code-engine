@@ -2,8 +2,10 @@ import express from "express";
 import dotenv from "dotenv";
 import {Redis} from "@upstash/redis";
 import crypto from "crypto";
+import cors from "cors";
 dotenv.config();
 const app=express();
+app.use(cors());
 const port=3000;
 console.log("My Redis URL is:", process.env.REDIS_URL);
 const redis=new Redis({
