@@ -11,6 +11,24 @@ const redis =new Redis({
     token:process.env.REDIS_TOKEN
 });
 const temp=path.join(process.cwd(),'temp');
+
+const languageConfig={
+  cpp:{
+    image:'cpp-runner',
+    extension:'cpp',
+    getRunCommand:(filename,compileName)=>`g++ ${filename} -o ${compileName} && ./${compileName}`},
+
+  python:{
+    image:'python-runner',
+    extension:'py',
+    getRunCommand:(filename)=>`python3 ${filename}`
+  },
+  javascript:{
+    image:'node-runner',
+    extension:'js',
+    getRunCommand:(filename)=>`node ${filename}`
+  }
+};
 const processQueue=async()=>{
     try{
           const job=await redis.rpop('code_queue');
@@ -18,17 +36,27 @@ const processQueue=async()=>{
             console.log("\ngot new job queue");
             console.log(job);
             const {jobId,language,code}=job;
+
+            const config=languageConfig[language];
+            if(!config){
+              console.log('unsupported language');
+              await redis.set(jobId,JSON.stringify({status:'error',output:'unsupported language'}),{ex:3600});
+              processQueue();
+              return ;
+            }
             await fs.mkdir(temp,{recursive:true});
-            const filepath=path.join(temp,`${jobId}.${language}`);
+            const filename=`${jobId}.${config.extension}`;
+            const filepath=path.join(temp,filename);
             await fs.writeFile(filepath,code);
             console.log(`code written to ${filepath}`);
 
             //containerised
-            console.log("spinning up docker container..");
-            const dockercommand=`docker run --rm -v "${temp}:/app" cpp-runner sh -c "g++ ${jobId}.${language} -o ${jobId} && ./${jobId}"`;
+            console.log(`spinning up docker container..${config.image}`);
+            const containerCommand=config.getRunCommand(filename,jobId);
+            const dockerCommand=`docker run --rm -v "${temp}:/app" ${config.image} sh -c "${containerCommand}"`;
 
             try{
-              const {stdout,stderr}=await execPromise(dockercommand);
+              const {stdout,stderr}=await execPromise(dockerCommand);
 
               let finaloutput=stdout;
               let jobstatus="success";
