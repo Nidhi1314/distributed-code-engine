@@ -53,10 +53,10 @@ const processQueue=async()=>{
             //containerised
             console.log(`spinning up docker container..${config.image}`);
             const containerCommand=config.getRunCommand(filename,jobId);
-            const dockerCommand=`docker run --rm -v "${temp}:/app" ${config.image} sh -c "${containerCommand}"`;
+            const dockerCommand=`docker run --name ${jobId} --rm -v "${temp}:/app" ${config.image} sh -c "${containerCommand}"`;
 
             try{
-              const {stdout,stderr}=await execPromise(dockerCommand);
+              const {stdout,stderr}=await execPromise(dockerCommand,{timeout:5000});
 
               let finaloutput=stdout;
               let jobstatus="success";
@@ -68,11 +68,19 @@ const processQueue=async()=>{
               else {
               console.log(`\n execution output-----\n${stdout}-------\n`);
               }
-              await redis.set(jobId,JSON.stringify({status:jobstatus,output:finaloutput}));
+              await redis.set(jobId,JSON.stringify({status:jobstatus,output:finaloutput}),{ex:3600});
               console.log(`result saved to redis job ${jobId} updated`);
+
             }catch(execError){
-              console.log(`compliation error ${execError.stderr}`);
-              await redis.set(jobId,JSON.stringify({status:"error",output:execError.stderr}),{ex:3600});
+              let errorMessage=execError.stderr || execError.message;
+              if(execError.killed){
+                     console.log(`execution assassinated :tle for job ${jobId}`);
+                     errorMessage="error:time limit exceeded. Your code took longer than 5 seconds to run";
+                     exec(`docker rm -f ${jobId}`);
+              }else{
+                     console.log(`execution error:\n${errorMessage}`); 
+              }
+              await redis.set(jobId,JSON.stringify({status:"error",output:errorMessage}),{ex:3600});
               console.log(`error saved to redis job ${jobId}`);
             }
 
