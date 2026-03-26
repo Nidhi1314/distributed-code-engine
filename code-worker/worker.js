@@ -54,9 +54,17 @@ const processQueue=async()=>{
             console.log(`spinning up docker container..${config.image}`);
             const containerCommand=config.getRunCommand(filename,jobId);
             const dockerCommand=`docker run --name ${jobId} --rm -v "${temp}:/app" ${config.image} sh -c "${containerCommand}"`;
-
+ 
+            //watchdog acting as independent alarm clock
+            const watchdog=setTimeout(()=>{
+               console.log(`\n watchdog triggered ${jobId}`);
+               exec(`docker rm -f ${jobId}`)
+            },5000);
             try{
-              const {stdout,stderr}=await execPromise(dockerCommand,{timeout:5000});
+              const {stdout,stderr}=await execPromise(dockerCommand);
+
+              //turnoff alrm when successfully executed
+              clearTimeout(watchdog);
 
               let finaloutput=stdout;
               let jobstatus="success";
@@ -72,11 +80,11 @@ const processQueue=async()=>{
               console.log(`result saved to redis job ${jobId} updated`);
 
             }catch(execError){
+              clearTimeout(watchdog);
               let errorMessage=execError.stderr || execError.message;
-              if(execError.killed){
+              if(execError.code==137 || String(errorMessage).includes('Command failed') ||execError.killed){
                      console.log(`execution assassinated :tle for job ${jobId}`);
                      errorMessage="error:time limit exceeded. Your code took longer than 5 seconds to run";
-                     exec(`docker rm -f ${jobId}`);
               }else{
                      console.log(`execution error:\n${errorMessage}`); 
               }
