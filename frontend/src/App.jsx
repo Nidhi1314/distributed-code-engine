@@ -25,15 +25,16 @@ function App() {
     setOutput('submitting code');
     setIsProcessing(true);
     try{
-
-      const submitRes=await axios.post('http://localhost:3000/submit',{
+      // live url of backend
+      const backendUrl=import.meta.env.VITE_API_URL;
+      const submitRes=await axios.post(`${backendUrl}/submit`,{
         language:language,code:code
       });
       const jobId=submitRes.data.jobId;
       setOutput(`jobid: ${jobId}\n waiitng for docker container`);
 
       const pollInterval=setInterval(async()=>{
-        const statusRes=await axios.get(`http://localhost:3000/status/${jobId}`);
+        const statusRes=await axios.get(`${backendUrl}/status/${jobId}`);
         if(statusRes.data.status==='success' || statusRes.data.status=='error'){
           clearInterval(pollInterval);
           setOutput(statusRes.data.output);
