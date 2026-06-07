@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import axios from 'axios';
-import Editor from '@monaco-editor/react';
+import CodeEditor from './components/CodeEditor';
 import './App.css'
 
 
@@ -66,21 +66,18 @@ function App() {
         <button
         onClick={handleRunCode}
         disabled={isProcessing}
-        style={{padding:'10px 20px',backgroundColor:isProcessing?'#555':'#4CAF50',color:'white',border:'none',borderRadius:'5px',cursor:isProcessing?'not-allowed':'pointer',fonstSize:'16px'}}
+        style={{padding:'10px 20px',backgroundColor:isProcessing?'#555':'#4CAF50',color:'white',border:'none',borderRadius:'5px',cursor:isProcessing?'not-allowed':'pointer',fontSize:'16px'}}
           >
             {isProcessing?'processing':'run code'}
           </button>
         </div>
         <div style={{display:'flex',flex:1}}>
-        <div style={{flex:1,broderRight:'1px solid #333'}}>
-          <Editor
-          height="100%"
-          language={language}
-          theme="vs-dark"
-          value={code}
-          onChange={(value)=>setCode(value)}
-          options={{fontSize:16,minimap:{enabled:false}}}
-          />
+        <div style={{flex:1,borderRight:'1px solid #333'}}>
+          <CodeEditor 
+              code={code} 
+              onChange={setCode} 
+              language={language} 
+            />
         </div>
         {/*right side -execution side*/}
         <div style={{flex:1,padding:'20px',backgroundColor:'#000',fontfamily:'monospace',whitespace:'prep-wrap'}}>
