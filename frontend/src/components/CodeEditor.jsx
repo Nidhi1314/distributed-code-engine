@@ -8,22 +8,19 @@ const CodeEditor = ({ code, onChange, language = 'cpp' }) => {
   };
 
   return (
-    <div className="w-full h-full border border-neutral-800 rounded-lg overflow-hidden shadow-2xl">
+     <div style={{ width: '100%', height: '100%', borderRadius: '8px', overflow: 'hidden' }}>
       <Editor
         height="100%"
+        width="100%"
         language={language}
         theme="vs-dark"
         value={code}
         onChange={handleEditorChange}
         options={{
-          fontSize: 14,
+          fontSize: 16, // Increased font size for better readability
           minimap: { enabled: true },
-          automaticLayout: true,
-          cursorBlinking: 'smooth',
-          cursorSmoothCaretAnimation: 'on',
+          automaticLayout: true, // This tells Monaco to automatically resize when the window changes
           padding: { top: 16, bottom: 16 },
-          fontFamily: "'Fira Code', 'Courier New', monospace",
-          fontLigatures: true,
         }}
       />
     </div>

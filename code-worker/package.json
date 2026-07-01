@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "type":"module",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -12,6 +12,8 @@
   "license": "ISC",
   "dependencies": {
     "@upstash/redis": "^1.37.0",
-    "dotenv": "^17.3.1"
+    "bullmq": "^5.79.2",
+    "dotenv": "^17.3.1",
+    "ioredis": "^5.11.1"
   }
 }
