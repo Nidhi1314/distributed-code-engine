@@ -26,7 +26,7 @@ function App() {
     setIsProcessing(true);
     try{
       // live url of backend
-      const backendUrl=import.meta.env.VITE_API_URL;
+      const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       const submitRes=await axios.post(`${backendUrl}/submit`,{
         language:language,code:code
       });

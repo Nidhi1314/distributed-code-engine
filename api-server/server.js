@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+import mongoose from 'mongoose';
 import { Queue } from 'bullmq';
 import Redis from 'ioredis';
 import crypto from "crypto";
@@ -8,6 +9,14 @@ dotenv.config();
 const app=express();
 app.use(cors());
 const port=3000;
+
+const MONGO_URI=process.env.MONGO_URI;
+mongoose.connect(MONGO_URI,{useNewUrlParser:true,useUnifiedTopology:true})
+.then(()=>{
+    console.log('connected to mongodb');
+}).catch((err)=>{
+    console.log('error connecting to mongodb',err);
+})
 
 
 console.log("My Redis URL is:", process.env.REDIS_URL);
