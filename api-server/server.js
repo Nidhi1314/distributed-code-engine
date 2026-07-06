@@ -5,6 +5,8 @@ import { Queue } from 'bullmq';
 import Redis from 'ioredis';
 import crypto from "crypto";
 import cors from "cors";
+import authRoutes from './routes/auth.js';
+
 dotenv.config();
 const app=express();
 app.use(cors());
@@ -17,12 +19,14 @@ mongoose.connect(MONGO_URI,{useNewUrlParser:true,useUnifiedTopology:true})
 }).catch((err)=>{
     console.log('error connecting to mongodb',err);
 })
-
+app.use(express.json());
+//use auth endpoints
+app.use('/api/auth',authRoutes);
 
 console.log("My Redis URL is:", process.env.REDIS_URL);
 const redisConnection= new Redis(process.env.REDIS_URL || 'redis://127.0.0.1:6379');
 const executionQueue = new Queue('execution-queue', { connection: redisConnection });
-app.use(express.json());
+
 app.get('/ping',(req,res)=>{
    res.status(200).json({status:"api is running"});
 });
@@ -64,5 +68,5 @@ app.get('/status/:jobId',async(req,res)=>{
    }
 });     
 app.listen(port,()=>{
-    console.log('server is running on http://localhost:${port}')
+    console.log(`server is running on http://localhost:${port}`);
 })
