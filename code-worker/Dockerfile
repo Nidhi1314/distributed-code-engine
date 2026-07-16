@@ -1,3 +1,4 @@
-FROM alpine:3.18
-RUN apk add --no-cache g++
+FROM gcc:13-bookworm
+RUN useradd -M -s /bin/false sandboxuser
+USER sandboxuser
 WORKDIR /app

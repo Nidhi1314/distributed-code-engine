@@ -1,5 +1,4 @@
-# Start with a super lightweight version of Python
 FROM python:3.11-alpine
-
-# Set the working directory
+RUN adduser -D -H sandboxuser
+USER sandboxuser
 WORKDIR /app

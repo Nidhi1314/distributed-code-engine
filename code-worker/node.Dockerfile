@@ -1,5 +1,4 @@
-# Start with a super lightweight version of Node.js
-FROM node:18-alpine
-
-# Set the working directory
+FROM node:20-alpine
+RUN adduser -D -H sandboxuser
+USER sandboxuser
 WORKDIR /app

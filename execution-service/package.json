@@ -1,0 +1,7 @@
+{
+  "name": "execution-service",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "description": "Isolated code execution engine with pluggable backends"
+}
